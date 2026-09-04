@@ -1,0 +1,6 @@
+{
+  "name": "ADERA",
+  "description": "ADERA (አደራ) - Security & Password Manager | የይለፍ ቃል እና ደህንነት መተግበሪያ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

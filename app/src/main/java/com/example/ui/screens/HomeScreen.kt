@@ -80,6 +80,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -366,52 +367,174 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Security Health Summary (Minimal)
+        // Highly Premium Security Status Hero Card with Custom Canvas Circular Gauge
         Surface(
             onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onSeeAllHealthClick()
             },
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-            modifier = Modifier.fillMaxWidth().testTag("home_security_health_card")
+            shape = RoundedCornerShape(24.dp),
+            color = Color.Transparent,
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 12.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    spotColor = AderaPrimary.copy(alpha = 0.3f)
+                )
+                .testTag("home_security_health_card")
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                AderaPrimary,
+                                AderaSecondary
+                            )
+                        )
+                    )
+                    .padding(20.dp)
             ) {
+                // Background subtle graphic accent - lock silhouette
                 Icon(
                     imageVector = Icons.Rounded.Security,
-                    contentDescription = "Security",
-                    tint = if (animatedScore >= 80) AderaSuccess else AderaWarning,
-                    modifier = Modifier.size(24.dp)
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.07f),
+                    modifier = Modifier
+                        .size(140.dp)
+                        .align(Alignment.CenterEnd)
+                        .graphicsLayer {
+                            translationX = 30f
+                            translationY = 10f
+                        }
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Vault Security Score",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    LinearProgressIndicator(
-                        progress = { (animatedScore / 100f).coerceIn(0f, 1f) },
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Left Side: Glowing Custom Canvas Circular Score Indicator
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(76.dp)
+                    ) {
+                        // Background soft pulse circle
+                        Box(
+                            modifier = Modifier
+                                .size(68.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.15f))
+                        )
+
+                        androidx.compose.foundation.Canvas(modifier = Modifier.size(60.dp)) {
+                            // Track
+                            drawArc(
+                                color = Color.White.copy(alpha = 0.25f),
+                                startAngle = -90f,
+                                sweepAngle = 360f,
+                                useCenter = false,
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round)
+                            )
+                            // Animated Sweep
+                            drawArc(
+                                color = Color.White,
+                                startAngle = -90f,
+                                sweepAngle = (animatedScore / 100f) * 360f,
+                                useCenter = false,
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6.dp.toPx(), cap = StrokeCap.Round)
+                            )
+                        }
+
+                        // Score Centered Number
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "$animatedScore",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp
+                                ),
+                                color = Color.White
+                            )
+                            Text(
+                                text = "%",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp
+                                ),
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(18.dp))
+
+                    // Right Side: Beautiful text descriptions
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White)
+                            )
+                            Text(
+                                text = if (animatedScore >= 80) "ACTIVE PROTECTION • ንቁ ጥበቃ" else "ATTENTION NEEDED • ትኩረት ያስፈልገዋል",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.8.sp
+                                ),
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Vault Security Score",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Dynamic localized security assessment tag
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color.White.copy(alpha = 0.2f),
+                            modifier = Modifier.align(Alignment.Start)
+                        ) {
+                            Text(
+                                text = if (animatedScore >= 90) "PRESTIGE LEVEL • ልዩ ደረጃ"
+                                       else if (animatedScore >= 80) "SECURE • ደህንነቱ የተጠበቀ"
+                                       else "VULNERABLE • ተጋላጭ",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 10.sp,
+                                    letterSpacing = 0.5.sp
+                                ),
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+
+                    // Interactive arrow cue
+                    Icon(
+                        imageVector = Icons.Rounded.ChevronRight,
+                        contentDescription = "Details",
+                        tint = Color.White,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp)
-                            .padding(top = 8.dp)
-                            .clip(CircleShape),
-                        color = if (animatedScore >= 80) AderaSuccess else AderaWarning,
-                        trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                        strokeCap = StrokeCap.Round
+                            .size(24.dp)
+                            .padding(start = 4.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = "${animatedScore}%",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
             }
         }
 
